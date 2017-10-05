@@ -1,0 +1,687 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../fontawesome-iconset/fa-all.html">
+<link rel="import" href="../image-gallery-popup/image-gallery-popup.html">
+<link rel="import" href="../image-thumbnail/image-thumbnail.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+
+<!--
+A Polymer Element showing a gallery of image thumbnails and buttons for the search dialog.  Based on image-gallery.
+
+### Example
+
+```js
+var images = [{
+  id: 1,
+  link: 'https://github.com/DigElements',
+  name: 'DIG',
+  source: 'dig.png'
+}, {
+  id: 2,
+  link: 'https://nextcentury.com',
+  name: 'Next Century',
+  source: 'NextCentury.png'
+}];
+```
+
+```html
+<search-image-gallery images="[[images]]"></search-image-gallery>
+```
+
+### Styling
+
+`<search-image-gallery>` provides the following custom properties and mixins for styling:
+
+Custom property                  | Description                                  | Default
+---------------------------------|----------------------------------------------|--------
+`--image-gallery-hovering-color` | The background color of the hovering images. | none
+`--image-gallery-selected-color` | The background color of the selected images. | none
+`--image-gallery-label-style`    | The style of the label.                      | none
+
+@demo demo/index.html
+-->
+
+<dom-module id="search-image-gallery">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+
+    <style>
+      :host {
+        display: block;
+      }
+
+      .image-wrapper {
+        border-radius: 2px;
+        margin: 0 5px 5px 0;
+        padding: 0 5px;
+      }
+
+      .image-wrapper .options-wrapper {
+        visibility: hidden;
+      }
+
+      .image-wrapper:hover .options-wrapper,
+      .image-wrapper.selected .options-wrapper {
+        visibility: visible;
+      }
+
+      .label {
+        font-size: 12px;
+        line-height: 15px;
+        margin: 10px 0 5px;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        word-wrap: break-word;
+        @apply --image-gallery-label-style;
+      }
+
+      paper-icon-button {
+        border-radius: 50%;
+        height: 20px;
+        width: 20px;
+        min-height: 20px;
+        min-width: 20px;
+        margin: 5px 10px 5px 0;
+        padding: 0;
+      }
+
+      paper-icon-button.blue:hover,
+      paper-icon-button.blue.selected {
+        color: blue;
+      }
+
+      paper-icon-button.green:hover,
+      paper-icon-button.green.selected {
+        color: green;
+      }
+
+      paper-icon-button.red:hover,
+      paper-icon-button.red.selected {
+        color: red;
+      }
+
+      image-thumbnail {
+        margin: 5px;
+        --image-thumbnail-highlight-color: transparent;
+      }
+
+      .image-wrapper.selected {
+        background-color: var(--image-gallery-selected-color, rgba(0,0,0,0.1));
+      }
+
+      .image-wrapper.hovering {
+        background-color: var(--image-gallery-hovering-color, rgba(0,0,0,0.1));
+      }
+    </style>
+
+    <div class="layout horizontal flex wrap">
+      <template is="dom-repeat" items="[[images]]" as="image">
+        <div on-mouseover="_hoverBegin" on-mouseout="_hoverEnd"
+          class$="layout horizontal center image-wrapper [[_getStyleClass(selected, image, imageIdProperty, 'selected')]] [[_getStyleClass(hovering, image, imageIdProperty, 'hovering')]]">
+
+          <div class="layout vertical center">
+            <div class="label" title$="[[_getStatus(selected, required, excluded, image, imageIdProperty)]]">[[_getStatus(selected, required, excluded, image, imageIdProperty)]]</div>
+
+            <image-thumbnail
+              id="[[_getProperty(image, imageIdProperty)]]"
+              class$="[[_getStyleClass(selected, image, imageIdProperty, 'selected')]] [[_getStyleClass(hovering, image, imageIdProperty, 'hovering')]]"
+              highlight
+              source="[[_getProperty(image, imageSourceProperty)]]"
+              style-class="[[smallImageStyleClass]]"
+              click-listener="[[_createImageClickListener()]]"
+              click-title="Click to View Full-Size [[_getImageLabel(image, imageNameProperty, index)]]"
+              click-value="[[index]]">
+            </image-thumbnail>
+          </div>
+
+          <div class="layout vertical center options-wrapper">
+            <paper-icon-button
+              class$="green [[_getStyleClass(selected, image, imageIdProperty, 'selected')]]"
+              icon="fa:search"
+              title$="[[_getSelectedButtonText(selected, image, imageIdProperty)]]"
+              on-tap="_toggleSelected">
+            </paper-icon-button>
+
+            <paper-icon-button
+              class$="green [[_getStyleClass(required, image, imageIdProperty, 'selected')]]"
+              icon="fa:plus"
+              title$="[[_getRequiredButtonText(required, image, imageIdProperty)]]"
+              on-tap="_toggleRequired">
+            </paper-icon-button>
+
+            <paper-icon-button
+              class$="green [[_getStyleClass(excluded, image, imageIdProperty, 'selected')]]"
+              icon="fa:minus"
+              title$="[[_getExcludedButtonText(excluded, image, imageIdProperty)]]"
+              on-tap="_toggleExcluded">
+            </paper-icon-button>
+
+            <paper-icon-button
+              class="red"
+              icon="fa:times"
+              title="Click to Remove"
+              on-tap="_remove">
+            </paper-icon-button>
+
+            <template is="dom-if" if="[[_getProperty(image, imageLinkProperty)]]">
+              <paper-icon-button
+                class="blue"
+                icon="open-in-new"
+                title$="Click to Open [[_getImageLabel(image, imageNameProperty, index)]]"
+                on-tap="_open">
+              </paper-icon-button>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'search-image-gallery',
+
+      properties: {
+        /**
+         * (Required|Output)
+         *
+         * The list of image objects.
+         *
+         * @type {Array}
+         * @default []
+         */
+        images: {
+          notify: true,
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * (Optional)
+         *
+         * The unique ID property in the image objects.
+         *
+         * @type {String}
+         * @default 'id'
+         */
+        imageIdProperty: {
+          type: String,
+          value: 'id'
+        },
+
+        /**
+         * (Optional)
+         *
+         * The link URL property in the image objects to open information within the application.
+         *
+         * @type {String}
+         * @default 'link'
+         */
+        imageLinkProperty: {
+          type: String,
+          value: 'link'
+        },
+
+        /**
+         * (Optional)
+         *
+         * The name property in the image objects to open information within the application.
+         *
+         * @type {String}
+         * @default 'name'
+         */
+        imageNameProperty: {
+          type: String,
+          value: 'name'
+        },
+
+        /**
+         * (Optional)
+         *
+         * The source URL property in the image objects.
+         *
+         * @type {String}
+         * @default 'source'
+         */
+        imageSourceProperty: {
+          type: String,
+          value: 'source'
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * The list of excluded image IDs.
+         *
+         * @type {Array}
+         * @default []
+         */
+        excluded: {
+          notify: true,
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * (Optional)
+         *
+         * The list of image IDs targeted by a hover event.
+         *
+         * @type {Array}
+         * @default []
+         */
+        hovering: {
+          notify: true,
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * (Optional)
+         *
+         * The style class for any image in a popup.
+         *
+         * @type {String}
+         * @default ''
+         */
+        largeImageStyleClass: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * The list of required image IDs.
+         *
+         * @type {Array}
+         * @default []
+         */
+        required: {
+          notify: true,
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * The list of selected image IDs.
+         *
+         * @type {Array}
+         * @default []
+         */
+        selected: {
+          notify: true,
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * (Optional)
+         *
+         * The style class for all the images in the gallery.
+         *
+         * @type {String}
+         * @default ''
+         */
+        smallImageStyleClass: {
+          type: String,
+          value: ''
+        }
+      },
+
+      /**
+       * Creates and returns a click listener for the image thumbnails that opens the image in an image-gallery-popup.
+       *
+       * @return {Object}
+       * @private
+       */
+      _createImageClickListener: function() {
+        var self = this;
+
+        var createPopupElement = function(index) {
+          /* Appending image-gallery-popup element with paper-dialog to body when
+             opened -- workaround for unexpected behavior with overlays, which should
+             be placed directly in the body tag whenever possible:
+             https://github.com/PolymerElements/polymer-starter-kit/issues/154
+             https://github.com/PolymerElements/paper-dialog/issues/79#issuecomment-201681529
+          */
+          var body = Polymer.dom(document).querySelector('body');
+          var firstChildOfBody = Polymer.dom(body).firstChild;
+          var imageGalleryPopupElement = document.createElement('image-gallery-popup');
+
+          imageGalleryPopupElement.images = self.images;
+          imageGalleryPopupElement.imageLinkProperty = self.imageLinkProperty;
+          imageGalleryPopupElement.imageSourceProperty = self.imageSourceProperty;
+          imageGalleryPopupElement.currentIndex = index;
+          imageGalleryPopupElement.linkText = 'open image';
+          imageGalleryPopupElement.linkTarget = '_blank';
+          imageGalleryPopupElement.styleClass = self.largeImageStyleClass;
+
+          body.insertBefore(imageGalleryPopupElement, firstChildOfBody);
+        };
+
+        return {
+          onClick: createPopupElement
+        };
+      },
+
+      /**
+       * Returns the "excluded" button text.
+       *
+       * @param {Array} list
+       * @param {Object} item
+       * @param {String} property
+       * @return {String}
+       * @private
+       */
+      _getExcludedButtonText: function(list, item, property) {
+        var excluded = this._isInList(list, item, property);
+        return 'Image ' + (excluded ? '' : 'Not ') + 'Excluded from My Search Results (Click to ' + (excluded ? 'Not ' : '') + 'Exclude from My Search Results)';
+      },
+
+      /**
+       * Returns the image label using the given property in the given item or, if undefined, the given index.
+       *
+       * @param {Object} item
+       * @param {String} property
+       * @param {Number} index
+       * @return {String}
+       * @private
+       */
+      _getImageLabel: function(item, property, index) {
+        return item && item[property] ? item[property] : ('Image #' + (index + 1));
+      },
+
+      /**
+       * Returns the given property in the given item or the given default value if the property is empty.
+       *
+       * @param {Object} item
+       * @param {String} property
+       * @param defaultValue
+       * @return
+       * @private
+       */
+      _getProperty: function(item, property, defaultValue) {
+        return item[property] || defaultValue;
+      },
+
+      /**
+       * Returns the "required" button text.
+       *
+       * @param {Array} list
+       * @param {Object} item
+       * @param {String} property
+       * @return {String}
+       * @private
+       */
+      _getRequiredButtonText: function(list, item, property) {
+        var required = this._isInList(list, item, property);
+        return 'Image ' + (required ? '' : 'Not ') + 'Required in My Search Results (Click to ' + (required ? 'Not ' : '') + 'Require in My Search Results)';
+      },
+
+      /**
+       * Returns the "selected" button text.
+       *
+       * @param {Array} list
+       * @param {Object} item
+       * @param {String} property
+       * @return {String}
+       * @private
+       */
+      _getSelectedButtonText: function(list, item, property) {
+        var selected = this._isInList(list, item, property);
+        return 'Image ' + (selected ? '' : 'Not ') + 'Added to My Search Terms (Click to ' + (selected ? 'Remove from ' : 'Add to ') + 'My Search Terms)';
+      },
+
+      /**
+       * Returns the selected status string of an image.
+       *
+       * @param {Array} selected
+       * @param {Array} required
+       * @param {Array} excluded
+       * @param {Object} item
+       * @param {String} property
+       * @return {String}
+       * @private
+       */
+      _getStatus: function(selected, required, excluded, item, property) {
+        if(!item || !item[property]) {
+          return;
+        }
+
+        if(excluded.indexOf(item[property]) >= 0) {
+          return 'Excluded';
+        }
+        if(required.indexOf(item[property]) >= 0) {
+          return 'Required';
+        }
+        return (selected.indexOf(item[property]) >= 0 ? 'Selected' : 'Unselected');
+      },
+
+      /**
+       * Returns the given style class if the given property in the given item is in the given list.
+       *
+       * @param {Array} list
+       * @param {Object} item
+       * @param {String} property
+       * @param {String} styleClass
+       * @return {Boolean}
+       * @private
+       */
+      _getStyleClass: function(list, item, property, styleClass) {
+        return this._isInList(list, item, property) ? styleClass : '';
+      },
+
+      /**
+       * Sets the hovering array to the ID of the image in the given event model.
+       *
+       * @private
+       */
+      _hoverBegin: function(event) {
+        this.set('hovering', [event.model.image[this.imageIdProperty]]);
+      },
+
+      /**
+       * Resets the hovering array.
+       *
+       * @private
+       */
+      _hoverEnd: function() {
+        this.set('hovering', []);
+      },
+
+      /**
+       * Returns whether the value in the given item at the given property is in the given list.
+       *
+       * @param {Array} list
+       * @param {Object} item
+       * @param {String} property
+       * @return {Boolean}
+       * @private
+       */
+      _isInList: function(list, item, property) {
+        return (item && typeof item[property] !== 'undefined' && (list.indexOf(item[property]) >= 0));
+      },
+
+      /**
+       * Opens the link for the given image.
+       *
+       * @private
+       */
+      _open: function(event) {
+        if(event.model.image[this.imageLinkProperty]) {
+          window.open(event.model.image[this.imageLinkProperty], '_blank');
+        }
+      },
+
+      /**
+       * Removes the image in the given event model from the list of images.
+       *
+       * @private
+       */
+      _remove: function(event) {
+        var removeId = event.model.image[this.imageIdProperty];
+
+        // Use the map function to create a new array.
+        this.set('excluded', this.excluded.map(function(id) {
+          return id;
+        }).filter(function(id) {
+          return id !== removeId;
+        }));
+
+        // Use the map function to create a new array.
+        this.set('required', this.required.map(function(id) {
+          return id;
+        }).filter(function(id) {
+          return id !== removeId;
+        }));
+
+        // Use the map function to create a new array.
+        this.set('selected', this.selected.map(function(id) {
+          return id;
+        }).filter(function(id) {
+          return id !== removeId;
+        }));
+
+        // Use the map function to create a new array.
+        this.set('images', this.images.map(function(image) {
+          return image;
+        }).filter(function(image) {
+          return image.id !== removeId;
+        }));
+      },
+
+      /**
+       * Toggles the excluded status of the ID of the image in the given event model.
+       *
+       * @private
+       */
+      _toggleExcluded: function(event) {
+        var toggleId = event.model.image[this.imageIdProperty];
+
+        // Use the map function to create a new array.
+        if(this.excluded.indexOf(toggleId) >= 0) {
+          this.set('excluded', this.excluded.map(function(id) {
+            return id;
+          }).filter(function(id) {
+            return id !== toggleId;
+          }));
+        } else {
+          this.set('excluded', this.excluded.map(function(id) {
+            return id;
+          }).concat(toggleId));
+
+          if(this.required.indexOf(toggleId) >= 0) {
+            this.set('required', this.required.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
+        }
+      },
+
+      /**
+       * Toggles the required status of the ID of the image in the given event model.
+       *
+       * @private
+       */
+      _toggleRequired: function(event) {
+        var toggleId = event.model.image[this.imageIdProperty];
+
+        // Use the map function to create a new array.
+        if(this.required.indexOf(toggleId) >= 0) {
+          this.set('required', this.required.map(function(id) {
+            return id;
+          }).filter(function(id) {
+            return id !== toggleId;
+          }));
+        } else {
+          this.set('required', this.required.map(function(id) {
+            return id;
+          }).concat(toggleId));
+
+          if(this.excluded.indexOf(toggleId) >= 0) {
+            this.set('excluded', this.excluded.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
+        }
+      },
+
+      /**
+       * Toggles the selected status of the ID of the image in the given event model.
+       *
+       * @private
+       */
+      _toggleSelected: function(event) {
+        var toggleId = event.model.image[this.imageIdProperty];
+
+        // Use the map function to create a new array.
+        if(this.selected.indexOf(toggleId) >= 0) {
+          this.set('selected', this.selected.map(function(id) {
+            return id;
+          }).filter(function(id) {
+            return id !== toggleId;
+          }));
+
+          if(this.required.indexOf(toggleId) >= 0) {
+            this.set('required', this.required.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
+
+          if(this.excluded.indexOf(toggleId) >= 0) {
+            this.set('excluded', this.excluded.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
+        } else {
+          this.set('selected', this.selected.map(function(id) {
+            return id;
+          }).concat(toggleId));
+        }
+      }
+    });
+  })();
+  </script>
+</dom-module>

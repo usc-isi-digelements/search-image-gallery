@@ -1,0 +1,29 @@
+{
+  "name": "search-image-gallery",
+  "description": "A Polymer Element showing a gallery of image thumbnails and buttons for the search dialog.  Based on image-gallery.",
+  "version": "2.0.0",
+  "authors": ["Next Century Corporation"],
+  "license": "Apache-2.0",
+  "keywords": [
+    "web-component",
+    "polymer"
+  ],
+  "main": "search-image-gallery.html",
+  "homepage": "https://github.com/DigElements/search-image-gallery/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.2",
+    "fontawesome-iconset": "https://github.com/vangware/fontawesome-iconset.git#09ac70f619bb44d73fefc5f9524ae29ab217ed15",
+    "image-gallery-popup": "DigElements/image-gallery-popup#2.0.2",
+    "image-thumbnail": "DigElements/image-thumbnail#2.0.3",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^2.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",
+    "web-component-tester": "^6.0.0"
+  }
+}

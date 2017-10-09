@@ -132,7 +132,7 @@ Custom property                  | Description                                  
     </style>
 
     <div class="layout horizontal flex wrap">
-      <template is="dom-repeat" items="[[images]]" as="image">
+      <template is="dom-repeat" items="[[images]]" as="image" initial-count="10">
         <div on-mouseover="_hoverBegin" on-mouseout="_hoverEnd"
           class$="layout horizontal center image-wrapper [[_getStyleClass(selected, image, imageIdProperty, 'selected')]] [[_getStyleClass(hovering, image, imageIdProperty, 'hovering')]]">
 

@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../image-thumbnail/image-thumbnail.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-styles/color.html">
 
 <!--
 A Polymer Element showing a gallery of image thumbnails and buttons for the search dialog.  Based on image-gallery.
@@ -29,12 +30,10 @@ A Polymer Element showing a gallery of image thumbnails and buttons for the sear
 ```js
 var images = [{
   id: 1,
-  link: 'https://github.com/DigElements',
   name: 'DIG',
   source: 'dig.png'
 }, {
   id: 2,
-  link: 'https://nextcentury.com',
   name: 'Next Century',
   source: 'NextCentury.png'
 }];
@@ -104,17 +103,17 @@ Custom property                  | Description                                  
 
       paper-icon-button.blue:hover,
       paper-icon-button.blue.selected {
-        color: blue;
+        color: var(--paper-blue-600, blue);
       }
 
       paper-icon-button.green:hover,
       paper-icon-button.green.selected {
-        color: green;
+        color: var(--paper-green-600, green);
       }
 
       paper-icon-button.red:hover,
       paper-icon-button.red.selected {
-        color: red;
+        color: var(--paper-red-600, red);
       }
 
       image-thumbnail {
@@ -132,12 +131,12 @@ Custom property                  | Description                                  
     </style>
 
     <div class="layout horizontal flex wrap">
-      <template is="dom-repeat" items="[[images]]" as="image" initial-count="10">
+      <template is="dom-repeat" items="[[images]]" as="image">
         <div on-mouseover="_hoverBegin" on-mouseout="_hoverEnd"
           class$="layout horizontal center image-wrapper [[_getStyleClass(selected, image, imageIdProperty, 'selected')]] [[_getStyleClass(hovering, image, imageIdProperty, 'hovering')]]">
 
           <div class="layout vertical center">
-            <div class="label" title$="[[_getStatus(selected, required, excluded, image, imageIdProperty)]]">[[_getStatus(selected, required, excluded, image, imageIdProperty)]]</div>
+            <div class="label" title$="[[_getStatus(selected, excluded, required, union, image, imageIdProperty)]]">[[_getStatus(selected, excluded, required, union, image, imageIdProperty)]]</div>
 
             <image-thumbnail
               id="[[_getProperty(image, imageIdProperty)]]"
@@ -153,24 +152,31 @@ Custom property                  | Description                                  
 
           <div class="layout vertical center options-wrapper">
             <paper-icon-button
-              class$="green [[_getStyleClass(selected, image, imageIdProperty, 'selected')]]"
+              class$="blue [[_getStyleClass(selected, image, imageIdProperty, 'selected')]]"
               icon="fa:search"
               title$="[[_getSelectedButtonText(selected, image, imageIdProperty)]]"
               on-tap="_toggleSelected">
             </paper-icon-button>
 
             <paper-icon-button
-              class$="green [[_getStyleClass(required, image, imageIdProperty, 'selected')]]"
+              class$="blue [[_getStyleClass(required, image, imageIdProperty, 'selected')]]"
               icon="fa:plus"
               title$="[[_getRequiredButtonText(required, image, imageIdProperty)]]"
               on-tap="_toggleRequired">
             </paper-icon-button>
 
             <paper-icon-button
-              class$="green [[_getStyleClass(excluded, image, imageIdProperty, 'selected')]]"
+              class$="blue [[_getStyleClass(excluded, image, imageIdProperty, 'selected')]]"
               icon="fa:minus"
               title$="[[_getExcludedButtonText(excluded, image, imageIdProperty)]]"
               on-tap="_toggleExcluded">
+            </paper-icon-button>
+
+            <paper-icon-button
+              class$="blue [[_getStyleClass(union, image, imageIdProperty, 'selected')]]"
+              icon="fa:asterisk"
+              title$="[[_getUnionButtonText(union, image, imageIdProperty)]]"
+              on-tap="_toggleUnion">
             </paper-icon-button>
 
             <paper-icon-button
@@ -179,15 +185,6 @@ Custom property                  | Description                                  
               title="Click to Remove"
               on-tap="_remove">
             </paper-icon-button>
-
-            <template is="dom-if" if="[[_getProperty(image, imageLinkProperty)]]">
-              <paper-icon-button
-                class="blue"
-                icon="open-in-new"
-                title$="Click to Open [[_getImageLabel(image, imageNameProperty, index)]]"
-                on-tap="_open">
-              </paper-icon-button>
-            </template>
           </div>
         </div>
       </template>
@@ -229,19 +226,6 @@ Custom property                  | Description                                  
         imageIdProperty: {
           type: String,
           value: 'id'
-        },
-
-        /**
-         * (Optional)
-         *
-         * The link URL property in the image objects to open information within the application.
-         *
-         * @type {String}
-         * @default 'link'
-         */
-        imageLinkProperty: {
-          type: String,
-          value: 'link'
         },
 
         /**
@@ -358,6 +342,22 @@ Custom property                  | Description                                  
         smallImageStyleClass: {
           type: String,
           value: ''
+        },
+
+        /**
+         * (Optional|Output)
+         *
+         * The list of union image IDs.
+         *
+         * @type {Array}
+         * @default []
+         */
+        union: {
+          notify: true,
+          type: Array,
+          value: function() {
+            return [];
+          }
         }
       },
 
@@ -382,11 +382,8 @@ Custom property                  | Description                                  
           var imageGalleryPopupElement = document.createElement('image-gallery-popup');
 
           imageGalleryPopupElement.images = self.images;
-          imageGalleryPopupElement.imageLinkProperty = self.imageLinkProperty;
           imageGalleryPopupElement.imageSourceProperty = self.imageSourceProperty;
           imageGalleryPopupElement.currentIndex = index;
-          imageGalleryPopupElement.linkText = 'open image';
-          imageGalleryPopupElement.linkTarget = '_blank';
           imageGalleryPopupElement.styleClass = self.largeImageStyleClass;
 
           body.insertBefore(imageGalleryPopupElement, firstChildOfBody);
@@ -469,14 +466,15 @@ Custom property                  | Description                                  
        * Returns the selected status string of an image.
        *
        * @param {Array} selected
-       * @param {Array} required
        * @param {Array} excluded
+       * @param {Array} required
+       * @param {Array} union
        * @param {Object} item
        * @param {String} property
        * @return {String}
        * @private
        */
-      _getStatus: function(selected, required, excluded, item, property) {
+      _getStatus: function(selected, excluded, required, union, item, property) {
         if(!item || !item[property]) {
           return;
         }
@@ -486,6 +484,9 @@ Custom property                  | Description                                  
         }
         if(required.indexOf(item[property]) >= 0) {
           return 'Required';
+        }
+        if(union.indexOf(item[property]) >= 0) {
+          return 'Required Grouping';
         }
         return (selected.indexOf(item[property]) >= 0 ? 'Selected' : 'Unselected');
       },
@@ -502,6 +503,20 @@ Custom property                  | Description                                  
        */
       _getStyleClass: function(list, item, property, styleClass) {
         return this._isInList(list, item, property) ? styleClass : '';
+      },
+
+      /**
+       * Returns the "union" button text.
+       *
+       * @param {Array} list
+       * @param {Object} item
+       * @param {String} property
+       * @return {String}
+       * @private
+       */
+      _getUnionButtonText: function(list, item, property) {
+        var union = this._isInList(list, item, property);
+        return 'Image ' + (union ? '' : 'Not ') + 'Part of Required Grouping (Click to ' + (union ? 'Remove from ' : 'Add to ') + 'Required Grouping)';
       },
 
       /**
@@ -536,17 +551,6 @@ Custom property                  | Description                                  
       },
 
       /**
-       * Opens the link for the given image.
-       *
-       * @private
-       */
-      _open: function(event) {
-        if(event.model.image[this.imageLinkProperty]) {
-          window.open(event.model.image[this.imageLinkProperty], '_blank');
-        }
-      },
-
-      /**
        * Removes the image in the given event model from the list of images.
        *
        * @private
@@ -570,6 +574,13 @@ Custom property                  | Description                                  
 
         // Use the map function to create a new array.
         this.set('selected', this.selected.map(function(id) {
+          return id;
+        }).filter(function(id) {
+          return id !== removeId;
+        }));
+
+        // Use the map function to create a new array.
+        this.set('union', this.union.map(function(id) {
           return id;
         }).filter(function(id) {
           return id !== removeId;
@@ -603,6 +614,14 @@ Custom property                  | Description                                  
             return id;
           }).concat(toggleId));
 
+          if(this.union.indexOf(toggleId) >= 0) {
+            this.set('union', this.union.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
+
           if(this.required.indexOf(toggleId) >= 0) {
             this.set('required', this.required.map(function(id) {
               return id;
@@ -633,6 +652,14 @@ Custom property                  | Description                                  
             return id;
           }).concat(toggleId));
 
+          if(this.union.indexOf(toggleId) >= 0) {
+            this.set('union', this.union.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
+
           if(this.excluded.indexOf(toggleId) >= 0) {
             this.set('excluded', this.excluded.map(function(id) {
               return id;
@@ -659,6 +686,14 @@ Custom property                  | Description                                  
             return id !== toggleId;
           }));
 
+          if(this.union.indexOf(toggleId) >= 0) {
+            this.set('union', this.union.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
+
           if(this.required.indexOf(toggleId) >= 0) {
             this.set('required', this.required.map(function(id) {
               return id;
@@ -678,6 +713,44 @@ Custom property                  | Description                                  
           this.set('selected', this.selected.map(function(id) {
             return id;
           }).concat(toggleId));
+        }
+      },
+
+      /**
+       * Toggles the union status of the ID of the image in the given event model.
+       *
+       * @private
+       */
+      _toggleUnion: function(event) {
+        var toggleId = event.model.image[this.imageIdProperty];
+
+        // Use the map function to create a new array.
+        if(this.union.indexOf(toggleId) >= 0) {
+          this.set('union', this.union.map(function(id) {
+            return id;
+          }).filter(function(id) {
+            return id !== toggleId;
+          }));
+        } else {
+          this.set('union', this.union.map(function(id) {
+            return id;
+          }).concat(toggleId));
+
+          if(this.required.indexOf(toggleId) >= 0) {
+            this.set('required', this.required.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
+
+          if(this.excluded.indexOf(toggleId) >= 0) {
+            this.set('excluded', this.excluded.map(function(id) {
+              return id;
+            }).filter(function(id) {
+              return id !== toggleId;
+            }));
+          }
         }
       }
     });

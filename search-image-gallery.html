@@ -20,7 +20,6 @@ limitations under the License.
 <link rel="import" href="../image-thumbnail/image-thumbnail.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-styles/color.html">
 
 <!--
 A Polymer Element showing a gallery of image thumbnails and buttons for the search dialog.  Based on image-gallery.
@@ -93,6 +92,7 @@ Custom property                  | Description                                  
 
       paper-icon-button {
         border-radius: 50%;
+        color: var(--disabled-text-color);
         height: 20px;
         width: 20px;
         min-height: 20px;
@@ -101,19 +101,9 @@ Custom property                  | Description                                  
         padding: 0;
       }
 
-      paper-icon-button.blue:hover,
-      paper-icon-button.blue.selected {
-        color: var(--paper-blue-600, blue);
-      }
-
-      paper-icon-button.green:hover,
-      paper-icon-button.green.selected {
-        color: var(--paper-green-600, green);
-      }
-
-      paper-icon-button.red:hover,
-      paper-icon-button.red.selected {
-        color: var(--paper-red-600, red);
+      paper-icon-button:hover,
+      paper-icon-button.selected {
+        color: var(--primary-text-color);
       }
 
       image-thumbnail {
@@ -152,35 +142,34 @@ Custom property                  | Description                                  
 
           <div class="layout vertical center options-wrapper">
             <paper-icon-button
-              class$="blue [[_getStyleClass(selected, image, imageIdProperty, 'selected')]]"
+              class$="[[_getStyleClass(selected, image, imageIdProperty, 'selected')]]"
               icon="fa:search"
               title$="[[_getSelectedButtonText(selected, image, imageIdProperty)]]"
               on-tap="_toggleSelected">
             </paper-icon-button>
 
             <paper-icon-button
-              class$="blue [[_getStyleClass(required, image, imageIdProperty, 'selected')]]"
+              class$="[[_getStyleClass(required, image, imageIdProperty, 'selected')]]"
               icon="fa:plus"
               title$="[[_getRequiredButtonText(required, image, imageIdProperty)]]"
               on-tap="_toggleRequired">
             </paper-icon-button>
 
             <paper-icon-button
-              class$="blue [[_getStyleClass(excluded, image, imageIdProperty, 'selected')]]"
+              class$="[[_getStyleClass(excluded, image, imageIdProperty, 'selected')]]"
               icon="fa:minus"
               title$="[[_getExcludedButtonText(excluded, image, imageIdProperty)]]"
               on-tap="_toggleExcluded">
             </paper-icon-button>
 
             <paper-icon-button
-              class$="blue [[_getStyleClass(union, image, imageIdProperty, 'selected')]]"
+              class$="[[_getStyleClass(union, image, imageIdProperty, 'selected')]]"
               icon="fa:asterisk"
               title$="[[_getUnionButtonText(union, image, imageIdProperty)]]"
               on-tap="_toggleUnion">
             </paper-icon-button>
 
             <paper-icon-button
-              class="red"
               icon="fa:times"
               title="Click to Remove"
               on-tap="_remove">

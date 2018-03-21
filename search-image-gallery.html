@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../image-thumbnail/image-thumbnail.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-styles/color.html">
 
 <!--
 A Polymer Element showing a gallery of image thumbnails and buttons for the search dialog.  Based on image-gallery.
@@ -48,8 +49,8 @@ var images = [{
 
 Custom property                  | Description                                  | Default
 ---------------------------------|----------------------------------------------|--------
-`--image-gallery-hovering-color` | The background color of the hovering images. | none
-`--image-gallery-selected-color` | The background color of the selected images. | none
+`--image-gallery-hovering-color` | The background color of the hovering images. | --paper-grey-300
+`--image-gallery-selected-color` | The background color of the selected images. | --paper-grey-300
 `--image-gallery-label-style`    | The style of the label.                      | none
 
 @demo demo/index.html
@@ -91,7 +92,7 @@ Custom property                  | Description                                  
 
       paper-icon-button {
         border-radius: 50%;
-        color: var(--disabled-text-color);
+        color: var(--paper-grey-600);
         height: 20px;
         width: 20px;
         min-height: 20px;
@@ -102,7 +103,7 @@ Custom property                  | Description                                  
 
       paper-icon-button:hover,
       paper-icon-button.selected {
-        color: var(--primary-text-color);
+        color: var(--paper-grey-900);
       }
 
       image-thumbnail {
@@ -111,11 +112,11 @@ Custom property                  | Description                                  
       }
 
       .image-wrapper.selected {
-        background-color: var(--image-gallery-selected-color, rgba(0,0,0,0.1));
+        background-color: var(--image-gallery-selected-color, var(--paper-grey-300));
       }
 
       .image-wrapper.hovering {
-        background-color: var(--image-gallery-hovering-color, rgba(0,0,0,0.1));
+        background-color: var(--image-gallery-hovering-color, var(--paper-grey-300));
       }
     </style>
 

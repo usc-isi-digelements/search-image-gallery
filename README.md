@@ -28,8 +28,8 @@ var images = [{
 
 Custom property                  | Description                                  | Default
 ---------------------------------|----------------------------------------------|--------
-`--image-gallery-hovering-color` | The background color of the hovering images. | none
-`--image-gallery-selected-color` | The background color of the selected images. | none
+`--image-gallery-hovering-color` | The background color of the hovering images. | --paper-grey-300
+`--image-gallery-selected-color` | The background color of the selected images. | --paper-grey-300
 `--image-gallery-label-style`    | The style of the label.                      | none
 
 ### Dependencies

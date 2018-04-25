@@ -15,11 +15,10 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../fontawesome-iconset/fa-all.html">
+<link rel="import" href="../icon-button/icon-button.html">
 <link rel="import" href="../image-gallery-popup/image-gallery-popup.html">
 <link rel="import" href="../image-thumbnail/image-thumbnail.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-styles/color.html">
 
 <!--
@@ -49,8 +48,8 @@ var images = [{
 
 Custom property                  | Description                                  | Default
 ---------------------------------|----------------------------------------------|--------
-`--image-gallery-hovering-color` | The background color of the hovering images. | --paper-grey-300
-`--image-gallery-selected-color` | The background color of the selected images. | --paper-grey-300
+`--image-gallery-hovering-color` | The background color of the hovering images. | --paper-grey-100
+`--image-gallery-selected-color` | The background color of the selected images. | --paper-grey-100
 `--image-gallery-label-style`    | The style of the label.                      | none
 
 @demo demo/index.html
@@ -90,20 +89,8 @@ Custom property                  | Description                                  
         @apply --image-gallery-label-style;
       }
 
-      paper-icon-button {
-        border-radius: 50%;
-        color: var(--paper-grey-600);
-        height: 20px;
-        width: 20px;
-        min-height: 20px;
-        min-width: 20px;
+      icon-button {
         margin: 5px 10px 5px 0;
-        padding: 0;
-      }
-
-      paper-icon-button:hover,
-      paper-icon-button.selected {
-        color: var(--paper-grey-900);
       }
 
       image-thumbnail {
@@ -112,11 +99,11 @@ Custom property                  | Description                                  
       }
 
       .image-wrapper.selected {
-        background-color: var(--image-gallery-selected-color, var(--paper-grey-300));
+        background-color: var(--image-gallery-selected-color, var(--paper-grey-100));
       }
 
       .image-wrapper.hovering {
-        background-color: var(--image-gallery-hovering-color, var(--paper-grey-300));
+        background-color: var(--image-gallery-hovering-color, var(--paper-grey-100));
       }
     </style>
 
@@ -141,39 +128,39 @@ Custom property                  | Description                                  
           </div>
 
           <div class="layout vertical center options-wrapper">
-            <paper-icon-button
-              class$="[[_getStyleClass(selected, image, imageIdProperty, 'selected')]]"
+            <icon-button
+              active="[[_isInList(selected, image, imageIdProperty)]]"
               icon="fa:search"
-              title$="[[_getSelectedButtonText(selected, image, imageIdProperty)]]"
+              title-tooltip="[[_getSelectedButtonText(selected, image, imageIdProperty)]]"
               on-tap="_toggleSelected">
-            </paper-icon-button>
+            </icon-button>
 
-            <paper-icon-button
-              class$="[[_getStyleClass(required, image, imageIdProperty, 'selected')]]"
+            <icon-button
+              active="[[_isInList(required, image, imageIdProperty)]]"
               icon="fa:plus"
-              title$="[[_getRequiredButtonText(required, image, imageIdProperty)]]"
+              title-tooltip="[[_getRequiredButtonText(required, image, imageIdProperty)]]"
               on-tap="_toggleRequired">
-            </paper-icon-button>
+            </icon-button>
 
-            <paper-icon-button
-              class$="[[_getStyleClass(excluded, image, imageIdProperty, 'selected')]]"
+            <icon-button
+              active="[[_isInList(excluded, image, imageIdProperty)]]"
               icon="fa:minus"
-              title$="[[_getExcludedButtonText(excluded, image, imageIdProperty)]]"
+              title-tooltip="[[_getExcludedButtonText(excluded, image, imageIdProperty)]]"
               on-tap="_toggleExcluded">
-            </paper-icon-button>
+            </icon-button>
 
-            <paper-icon-button
-              class$="[[_getStyleClass(union, image, imageIdProperty, 'selected')]]"
+            <icon-button
+              active="[[_isInList(union, image, imageIdProperty)]]"
               icon="fa:asterisk"
-              title$="[[_getUnionButtonText(union, image, imageIdProperty)]]"
+              title-tooltip="[[_getUnionButtonText(union, image, imageIdProperty)]]"
               on-tap="_toggleUnion">
-            </paper-icon-button>
+            </icon-button>
 
-            <paper-icon-button
+            <icon-button
               icon="fa:times"
-              title="Click to Remove"
+              title-tooltip="Click to Remove"
               on-tap="_remove">
-            </paper-icon-button>
+            </icon-button>
           </div>
         </div>
       </template>
@@ -487,7 +474,7 @@ Custom property                  | Description                                  
        * @param {Object} item
        * @param {String} property
        * @param {String} styleClass
-       * @return {Boolean}
+       * @return {String}
        * @private
        */
       _getStyleClass: function(list, item, property, styleClass) {

@@ -9,16 +9,16 @@
     "polymer"
   ],
   "main": "search-image-gallery.html",
-  "homepage": "https://github.com/DigElements/search-image-gallery/",
+  "homepage": "https://github.com/usc-isi-digelements/search-image-gallery/",
   "ignore": [
     "/.*",
     "/test/"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.2",
-    "icon-button": "DigElements/icon-button#2.0.1",
-    "image-gallery-popup": "DigElements/image-gallery-popup#2.0.3",
-    "image-thumbnail": "DigElements/image-thumbnail#2.0.3",
+    "icon-button": "usc-isi-digelements/icon-button#2.0.1",
+    "image-gallery-popup": "usc-isi-digelements/image-gallery-popup#2.0.3",
+    "image-thumbnail": "usc-isi-digelements/image-thumbnail#2.0.3",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
     "paper-styles": "PolymerElements/paper-styles#^2.0.0"
   },

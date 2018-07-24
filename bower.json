@@ -1,24 +1,19 @@
 {
   "name": "search-image-gallery",
-  "description": "A Polymer Element showing a gallery of image thumbnails and buttons for the search dialog.  Based on image-gallery.",
-  "version": "2.1.0",
+  "description":
+    "A Polymer Element showing a gallery of image thumbnails and buttons for the search dialog.  Based on image-gallery.",
+  "version": "2.1.1",
   "authors": ["Next Century Corporation"],
   "license": "Apache-2.0",
-  "keywords": [
-    "web-component",
-    "polymer"
-  ],
+  "keywords": ["web-component", "polymer"],
   "main": "search-image-gallery.html",
   "homepage": "https://github.com/usc-isi-digelements/search-image-gallery/",
-  "ignore": [
-    "/.*",
-    "/test/"
-  ],
+  "ignore": ["/.*", "/test/"],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.2",
-    "icon-button": "usc-isi-digelements/icon-button#2.0.1",
-    "image-gallery-popup": "usc-isi-digelements/image-gallery-popup#2.0.3",
-    "image-thumbnail": "usc-isi-digelements/image-thumbnail#2.0.3",
+    "icon-button": "usc-isi-digelements/icon-button#^2.0.2",
+    "image-gallery-popup": "usc-isi-digelements/image-gallery-popup#^2.0.3",
+    "image-thumbnail": "usc-isi-digelements/image-thumbnail#^2.0.3",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
     "paper-styles": "PolymerElements/paper-styles#^2.0.0"
   },
